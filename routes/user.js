@@ -9,7 +9,7 @@ module.exports = ()=>{
     //     res.send()
     // })
 
-    router.post('/user', async (req,res)=>{
+    router.post('/new', async (req,res)=>{
         const user = new User(req.body)
 
         try {
@@ -23,8 +23,6 @@ module.exports = ()=>{
             return res.status(422).send(error.toString())
             
         }
-
-        res.send("testing")
     })
 
 

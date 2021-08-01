@@ -1,8 +1,9 @@
 
 require('../config/db');
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require('validator');
-const User = mongoose.model('User', {
+const userSchema = mongoose.Schema({
     firstname: {
         type: String,
         required: true,
@@ -39,6 +40,47 @@ const User = mongoose.model('User', {
         }
     }
 })
+
+userSchema.pre('save', async function(next){
+    const user = this;
+    console.log("Just before saving")
+    if(user.password){
+        user.password = await bcrypt.hash(user.password, 8)
+    }
+    next()
+})
+
+userSchema.statics.findByCredentials = async function (email,passwod){
+    try {
+        const user = await User.findOne({ email })
+        if(!user){
+            throw new Error('User not registered')
+        }
+
+    } catch (error) {
+        
+    }
+}
+
+userSchema.statics.findById = async function (id) {
+    try {
+        const user = await User.findOne({ id })
+        if(!user){
+            logger.error("Unable to find User with Id: "+id)
+            return 
+        }
+        
+        return user;
+    } catch (error) {
+        logger.error(error.toString())
+    }
+}
+
+const User = mongoose.model('User', userSchema);
+
+
+
+
 
 
 module.exports = User
