@@ -1,5 +1,6 @@
 
 require('../config/db');
+const  logger = require('../config/logger').userLogger;
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require('validator');
@@ -50,18 +51,37 @@ userSchema.pre('save', async function(next){
     next()
 })
 
-userSchema.statics.findByCredentials = async function (email,passwod){
+userSchema.statics.findByCredentials = async function (email,password){
     try {
+        console.log(email+" " +password)
         const user = await User.findOne({ email })
         if(!user){
             throw new Error('User not registered')
         }
+        const isMatch = await bcrypt.compare(password,user.password)
+
+        if(!isMatch){
+            throw new Error('Email or password is incorrect')
+        }
+        
+        return user;
 
     } catch (error) {
         
     }
 }
 
+
+userSchema.methods.toJSON = function () {
+    const user = this
+    const userObject = user.toObject()
+
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
+
+/** 
 userSchema.statics.findById = async function (id) {
     try {
         const user = await User.findOne({ id })
@@ -74,7 +94,7 @@ userSchema.statics.findById = async function (id) {
     } catch (error) {
         logger.error(error.toString())
     }
-}
+}*/
 
 const User = mongoose.model('User', userSchema);
 
